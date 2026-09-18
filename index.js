@@ -59,8 +59,8 @@ app.use('/api/properties', propertyRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/leads', leadRoutes);
 
-// Health Check Route
-app.get('/api/health', (req, res) => {
+// Health Check Routes
+const healthHandler = (req, res) => {
   const mongooseState = require('mongoose').connection.readyState;
   const dbStatus = {
     0: 'disconnected',
@@ -75,7 +75,10 @@ app.get('/api/health', (req, res) => {
     database: dbStatus,
     timestamp: new Date().toISOString()
   });
-});
+};
+
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
 
 // Root ping
 app.get('/', (req, res) => {
