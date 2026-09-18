@@ -1,27 +1,27 @@
 // makan-backend/config/db.js
 const mongoose = require('mongoose');
-const dns = require('dns');
 
-// Force IPv4 resolution order and set reliable public DNS servers for Atlas SRV lookups
-dns.setDefaultResultOrder('ipv4first');
-try {
-  dns.setServers(['8.8.8.8', '8.8.4.4']);
-} catch (e) {
-  // Ignore if not supported in environment
+// Print all executed Mongoose operations to console in development
+if (process.env.NODE_ENV !== 'production') {
+  mongoose.set('debug', true);
 }
 
-// Print all executed Mongoose operations to console
-mongoose.set('debug', true);
-
 const connectDB = async () => {
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    console.error('CRITICAL: MONGO_URI is not defined in environment variables!');
+    return;
+  }
+
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+    });
+    console.log(`MongoDB Connected successfully: ${conn.connection.host}`);
   } catch (error) {
     console.error('MongoDB Connection Error Details:');
-    console.error(error); // Logs full stack trace, underlying cause, and nested properties
-    // Exit process with failure
-    process.exit(1);
+    console.error(error.message);
   }
 };
 
